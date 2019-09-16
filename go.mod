@@ -1,0 +1,9 @@
+module pinbak
+
+go 1.13
+
+require (
+	github.com/otiai10/copy v1.0.2
+	github.com/satori/go.uuid v1.2.0
+	gopkg.in/src-d/go-git.v4 v4.13.1
+)

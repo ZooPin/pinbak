@@ -1,0 +1,79 @@
+package pinbak
+
+import (
+	"fmt"
+	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"os"
+	"time"
+)
+
+type GitHelper struct {
+	Path   string
+	Config *Config
+}
+
+func (g GitHelper) Clone(name string, url string) error {
+	var homePath, _ = os.UserHomeDir()
+	homePath = fmt.Sprint(homePath, "/.pinbak/", name)
+	_, err := git.PlainClone(homePath, false, &git.CloneOptions{
+		URL:               url,
+		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
+		Progress:          os.Stdout,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (g GitHelper) Push(path string) error {
+	r, err := git.PlainOpen(path)
+	if err != nil {
+		return err
+	}
+
+	err = r.Push(&git.PushOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (g GitHelper) Commit(path string) error {
+	r, err := git.PlainOpen(path)
+	if err != nil {
+		return err
+	}
+
+	w, err := r.Worktree()
+	if err != nil {
+		return err
+	}
+
+	_, err = w.Add("*")
+	if err != nil {
+		return err
+	}
+
+	_, err = w.Commit("Backup.", &git.CommitOptions{
+		Author: &object.Signature{
+			Name:  g.Config.Name,
+			Email: g.Config.Email,
+			When:  time.Now(),
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	err = r.Push(&git.PushOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
