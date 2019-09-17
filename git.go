@@ -13,6 +13,13 @@ type GitHelper struct {
 	Config *Config
 }
 
+func CreateGit(config Config) GitHelper {
+	return GitHelper{
+		Path:   config.path,
+		Config: &config,
+	}
+}
+
 func (g GitHelper) Clone(name string, url string) error {
 	var homePath, _ = os.UserHomeDir()
 	homePath = fmt.Sprint(homePath, "/.pinbak/", name)
@@ -25,6 +32,8 @@ func (g GitHelper) Clone(name string, url string) error {
 	if err != nil {
 		return err
 	}
+
+	g.Config.AddRepository(name, url)
 
 	return nil
 }

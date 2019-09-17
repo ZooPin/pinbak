@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"pinbak"
+	"pinbak/cmd/pinbak/commands"
 )
 
 func main() {
@@ -17,31 +18,13 @@ func main() {
 		log.Fatal("Error: ", config)
 	}
 
-	git := pinbak.GitHelper{
-		Path:   path,
-		Config: &config,
-	}
+	//git := pinbak.GitHelper{
+	//	Path:   path,
+	//	Config: &config,
+	//}
 
-	mover := pinbak.CreateMover(config, git, path)
+	//mover := pinbak.CreateMover(config, git, path)
 
-	err = mover.Restore("pinbak-test")
-	if err != nil {
-		log.Fatal("Error: ", err)
-	}
-	//err = mover.Add("/home/pingouin/.zshrc", "pinbak-test")
-	//if err != nil {
-	//	log.Fatal("Error: ", err)
-	//}
-	//
-	//err = mover.Add("/home/pingouin/git/.config", "pinbak-test")
-	//if err != nil {
-	//	log.Fatal("Error: ", err)
-	//}
-	//
-	//err = git.CommitAndPush("pinbak-test")
-	//if err != nil {
-	//	log.Fatal("Error: ", err)
-	//}
-	log.Print("Done")
+	commands.Execute()
 
 }

@@ -18,11 +18,11 @@ type Mover struct {
 	Index  map[string]Index
 }
 
-func CreateMover(config Config, git GitHelper, Path string) Mover {
+func CreateMover(config Config, git GitHelper) Mover {
 	return Mover{
 		Config: config,
 		Git:    git,
-		Path:   Path,
+		Path:   config.path,
 	}
 }
 

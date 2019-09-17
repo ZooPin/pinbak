@@ -15,6 +15,11 @@ type Config struct {
 	path       string            `json:"-"`
 }
 
+func LoadConfig(path string) (Config, error) {
+	var config Config
+	return config.Load(path)
+}
+
 func (c Config) Load(path string) (Config, error) {
 	var conf Config
 	conf.path = path
@@ -53,6 +58,9 @@ func (c Config) save() error {
 }
 
 func (c *Config) AddRepository(name string, url string) error {
+	if c.Repository == nil {
+		c.Repository = make(map[string]string)
+	}
 	if val, ok := c.Repository[name]; ok {
 		return errors.New(fmt.Sprint("Name already exist with value: ", val))
 	}
