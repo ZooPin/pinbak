@@ -9,57 +9,60 @@ import (
 	"os"
 )
 
-type IndexManager struct {
-	Repository map[string]map[string]string `json:"repository"`
-	Path       string                       `json:"-"`
+type Index struct {
+	Index    map[string]string `json:"index"`
+	Path     string            `json:"-"`
+	RepoName string            `json:"-"`
 }
 
-type Index struct {
-	Index map[string]string `json:"index"`
+func openIndex(basePath string, repoName string) (Index, error) {
+	var index Index
+	err := index.open(basePath, repoName)
+	index.RepoName = repoName
+	return index, err
 }
 
 func (I Index) checkIndex(basePath string, repoName string) bool {
-	path := fmt.Sprint(basePath, "/", repoName)
-	info, err := os.Stat(path)
+	info, err := os.Stat(I.Path)
 	if os.IsNotExist(err) {
 		return false
 	}
 	return !info.IsDir()
 }
 
-func (I Index) GetIndex(basePath string, repoName string) (Index, error) {
-	var index Index
+func (I *Index) open(basePath string, repoName string) error {
+	I.Path = fmt.Sprint(basePath, "/", repoName, "/index")
 	if !I.checkIndex(basePath, repoName) {
-		index.Index = make(map[string]string)
-	} else {
-		path := fmt.Sprint(basePath, "/", repoName, "/.index")
-		f, err := os.Open(path)
-		defer f.Close()
-		if err != nil {
-			return Index{}, err
-		}
-		data, err := ioutil.ReadAll(f)
-		if err != nil {
-			return Index{}, err
-		}
-		err = json.Unmarshal(data, &index)
-		if err != nil {
-			return Index{}, err
-		}
+		I.Index = make(map[string]string)
+		err := I.save()
+		return err
 	}
-	return index, nil
+
+	f, err := os.Open(I.Path)
+	defer f.Close()
+	if err != nil {
+		return err
+	}
+	data, err := ioutil.ReadAll(f)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(data, &I)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (im *IndexManager) Add(path string, repoName string) (string, error) {
-	var index Index
-	index, err := index.GetIndex(im.Path, repoName)
-	id := fmt.Sprintf("%s", uuid.NewV4())
-	if !im.CheckRepository(repoName) {
-		im.Repository[repoName] = make(map[string]string)
+func (I *Index) Add(path string) (string, error) {
+	if I.Index == nil {
+		I.Index = make(map[string]string)
 	}
-	im.Repository[repoName][id] = path
 
-	err = im.save(repoName)
+	id := fmt.Sprintf("%s", uuid.NewV4())
+	I.Index[id] = path
+
+	err := I.save()
 	if err != nil {
 		return "", err
 	}
@@ -67,44 +70,42 @@ func (im *IndexManager) Add(path string, repoName string) (string, error) {
 	return id, nil
 }
 
-func (im *IndexManager) Remove(repoName string, id string) error {
-	if !im.CheckRepository(repoName) {
-		return errors.New("Repository name not found")
+func (I Index) CheckFile(id string) bool {
+	_, ok := I.Index[id]
+	return ok
+}
+
+func (I Index) ContainPath(path string) bool {
+	for _, v := range I.Index {
+		if v == path {
+			return true
+		}
 	}
+	return false
+}
 
-	if !im.CheckFile(repoName, id) {
-		return errors.New("File not found")
-	}
-
-	delete(im.Repository[repoName], id)
-
-	err := im.save(repoName)
+func (I Index) save() error {
+	file, err := json.MarshalIndent(I, "", "  ")
 	if err != nil {
 		return err
 	}
-
+	err = ioutil.WriteFile(I.Path, file, 0644)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (im IndexManager) CheckRepository(repoName string) bool {
-	_, ok := im.Repository[repoName]
-	return ok
-}
+func (I *Index) Remove(id string) error {
+	if !I.CheckFile(id) {
+		return errors.New("File not found")
+	}
+	delete(I.Index, id)
 
-func (im IndexManager) CheckFile(repoName string, id string) bool {
-	_, ok := im.Repository[repoName][id]
-	return ok
-}
-
-func (im IndexManager) save(repoName string) error {
-	file, err := json.MarshalIndent(im, "", "  ")
+	err := I.save()
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprint(im.Path, repoName, "/.index")
-	err = ioutil.WriteFile(path, file, 0644)
-	if err != nil {
-		return err
-	}
+
 	return nil
 }

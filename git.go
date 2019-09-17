@@ -29,8 +29,22 @@ func (g GitHelper) Clone(name string, url string) error {
 	return nil
 }
 
-func (g GitHelper) Push(path string) error {
-	r, err := git.PlainOpen(path)
+func (g GitHelper) createPath(repoName string) string {
+	return fmt.Sprint(g.Path, "/", repoName)
+}
+
+func (g GitHelper) CommitAndPush(repoName string) error {
+	err := g.Commit(repoName)
+	if err != nil {
+		return err
+	}
+
+	err = g.Push(repoName)
+	return err
+}
+
+func (g GitHelper) Push(repoName string) error {
+	r, err := git.PlainOpen(g.createPath(repoName))
 	if err != nil {
 		return err
 	}
@@ -43,8 +57,8 @@ func (g GitHelper) Push(path string) error {
 	return nil
 }
 
-func (g GitHelper) Commit(path string) error {
-	r, err := git.PlainOpen(path)
+func (g GitHelper) Commit(repoName string) error {
+	r, err := git.PlainOpen(g.createPath(repoName))
 	if err != nil {
 		return err
 	}
@@ -53,8 +67,7 @@ func (g GitHelper) Commit(path string) error {
 	if err != nil {
 		return err
 	}
-
-	_, err = w.Add("*")
+	_, err = w.Add(".")
 	if err != nil {
 		return err
 	}
@@ -66,14 +79,5 @@ func (g GitHelper) Commit(path string) error {
 			When:  time.Now(),
 		},
 	})
-	if err != nil {
-		return err
-	}
-
-	err = r.Push(&git.PushOptions{})
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
