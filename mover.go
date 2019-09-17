@@ -26,6 +26,8 @@ func CreateMover(config Config, git GitHelper, Path string) Mover {
 	}
 }
 
+const moverUser = "{USER}"
+
 func (m *Mover) checkIndex(repoName string) (Index, error) {
 	if m.Index == nil {
 		m.Index = make(map[string]Index)
@@ -48,33 +50,33 @@ func (m Mover) Add(path string, repoName string) error {
 		return err
 	}
 
-	destPath := m.createDestPath(absPath, repoName)
-	err = m.move(absPath, destPath)
-	if err != nil {
-		return err
-	}
-
-	// Handle Home directory
-	// TODO: same for windows
-	if strings.HasPrefix(absPath, "/home") {
-		t := strings.Split(absPath, "/")
-		t[2] = "{USER}"
-		absPath = strings.Join(t, "/")
-	}
-
 	index, err := m.checkIndex(repoName)
 	if err != nil {
 		return err
 	}
 
-	if !index.ContainPath(absPath) {
-		_, err = index.Add(absPath)
+	backupPath := absPath
+	// Handle Home directory
+	// TODO: same for windows & better way to handle this
+	if strings.HasPrefix(absPath, "/home") {
+		t := strings.Split(absPath, "/")
+		t[2] = moverUser
+		backupPath = strings.Join(t, "/")
+	}
+	id, ok := index.ContainPath(backupPath)
+	if !ok {
+		id, err = index.Add(backupPath)
 		if err != nil {
 			return err
 		}
 	}
 
-	return nil
+	destPath := m.createDestPath(repoName, id)
+	err = m.move(absPath, destPath)
+	if err != nil {
+		index.Remove(id)
+	}
+	return err
 }
 
 func (m Mover) Remove(repoName string, id string) error {
@@ -110,12 +112,12 @@ func (m Mover) Update(repoName string) error {
 	}
 
 	for _, v := range index.Index {
-		if strings.Contains(v, "{USER}") {
+		if strings.Contains(v, moverUser) {
 			u, err := user.Current()
 			if err != nil {
 				return err
 			}
-			strings.Replace(v, "{USER}", u.Name, 1)
+			strings.Replace(v, moverUser, u.Name, 1)
 		}
 		destPath := m.createDestPath(v, repoName)
 		err = m.move(v, destPath)
@@ -124,6 +126,33 @@ func (m Mover) Update(repoName string) error {
 		}
 	}
 	return nil
+}
+
+func (m Mover) Restore(repoName string) error {
+	index, err := m.checkIndex(repoName)
+	if err != nil {
+		return err
+	}
+
+	for id, _ := range index.Index {
+		err = m.RestoreFile(repoName, id)
+	}
+	return err
+}
+
+func (m Mover) RestoreFile(repoName string, id string) error {
+	index, err := m.checkIndex(repoName)
+	if err != nil {
+		return err
+	}
+	restorePath := index.Index[id]
+	if strings.HasPrefix(restorePath, "/home") {
+		u, _ := user.Current()
+		restorePath = strings.Replace(restorePath, moverUser, u.Name, 1)
+	}
+	backupPath := fmt.Sprint(m.Path, "/", repoName, "/", id)
+	err = m.move(backupPath, restorePath)
+	return err
 }
 
 func (m Mover) move(source string, destination string) error {

@@ -75,13 +75,13 @@ func (I Index) CheckFile(id string) bool {
 	return ok
 }
 
-func (I Index) ContainPath(path string) bool {
-	for _, v := range I.Index {
+func (I Index) ContainPath(path string) (string, bool) {
+	for k, v := range I.Index {
 		if v == path {
-			return true
+			return k, true
 		}
 	}
-	return false
+	return "", false
 }
 
 func (I Index) save() error {
