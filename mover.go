@@ -85,7 +85,7 @@ func (m Mover) Remove(repoName string, id string) error {
 		return err
 	}
 
-	if index.CheckFile(id) {
+	if !index.CheckFile(id) {
 		return errors.New("File not found.")
 	}
 	path := m.createDestPath(index.Index[id], repoName)

@@ -13,18 +13,26 @@ type Config struct {
 	Email      string            `json:"email"`
 	Repository map[string]string `json:"Repository"`
 	path       string            `json:"-"`
+	configPath string            `json:"-"`
 }
+
+const configName = "config"
 
 func LoadConfig(path string) (Config, error) {
 	var config Config
 	return config.Load(path)
 }
 
+func (c *Config) SetPath(path string) {
+	c.path = path
+	c.configPath = fmt.Sprint(path, "/", configName)
+}
+
 func (c Config) Load(path string) (Config, error) {
 	var conf Config
-	conf.path = path
+	conf.SetPath(path)
 
-	file, err := os.Open(path)
+	file, err := os.Open(conf.configPath)
 	defer file.Close()
 
 	if err != nil {
@@ -44,13 +52,13 @@ func (c Config) Load(path string) (Config, error) {
 	return conf, nil
 }
 
-func (c Config) save() error {
+func (c Config) Save() error {
 	file, err := json.MarshalIndent(c, "", " ")
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(c.path, file, 0644)
+	err = ioutil.WriteFile(c.configPath, file, 0644)
 	if err != nil {
 		return err
 	}
@@ -66,10 +74,15 @@ func (c *Config) AddRepository(name string, url string) error {
 	}
 	c.Repository[name] = url
 
-	err := c.save()
+	err := c.Save()
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (c Config) CheckRepository(name string) bool {
+	_, ok := c.Repository[name]
+	return ok
 }
