@@ -113,16 +113,14 @@ func (m Mover) Update(repoName string) error {
 		return err
 	}
 
-	for _, v := range index.Index {
-		if strings.Contains(v, moverUser) {
-			u, err := user.Current()
-			if err != nil {
-				return err
-			}
-			strings.Replace(v, moverUser, u.Name, 1)
+	for id, path := range index.Index {
+		sourcePath := m.handleHomePath(path)
+		destPath := m.createDestPath(repoName, id)
+		err := m.Git.Remove(repoName, id)
+		if err != nil {
+			return err
 		}
-		destPath := m.createDestPath(v, repoName)
-		err = m.move(v, destPath)
+		err = m.move(sourcePath, destPath)
 		if err != nil {
 			return err
 		}
@@ -147,12 +145,8 @@ func (m Mover) RestoreFile(repoName string, id string) error {
 	if err != nil {
 		return err
 	}
-	restorePath := index.Index[id]
-	if strings.HasPrefix(restorePath, "/home") {
-		u, _ := user.Current()
-		restorePath = strings.Replace(restorePath, moverUser, u.Name, 1)
-	}
-	backupPath := fmt.Sprint(m.Path, "/", repoName, "/", id)
+	restorePath := m.handleHomePath(index.Index[id])
+	backupPath := m.createDestPath(repoName, id)
 	err = m.move(backupPath, restorePath)
 	return err
 }
@@ -186,6 +180,14 @@ func (m Mover) move(source string, destination string) error {
 	}
 
 	return nil
+}
+
+func (m Mover) handleHomePath(path string) string {
+	if strings.HasPrefix(path, "/home") {
+		u, _ := user.Current()
+		path = strings.Replace(path, moverUser, u.Name, -1)
+	}
+	return path
 }
 
 func (m Mover) createDestPath(repoName string, id string) string {
