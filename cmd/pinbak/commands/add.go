@@ -8,7 +8,7 @@ import (
 )
 
 var addCmd = &cobra.Command{
-	Use:   "add [repository] [file] [file...]",
+	Use:   "add [repository] [item] [item...]",
 	Short: "Add a file to backup.",
 	Args:  cobra.MinimumNArgs(2),
 	Run:   addFunc,

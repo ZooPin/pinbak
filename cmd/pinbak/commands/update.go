@@ -9,7 +9,7 @@ import (
 
 var updateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Update all files in all repositories.",
+	Short: "Update all items in all repositories.",
 	Run:   updateFunc,
 }
 
@@ -22,7 +22,7 @@ func updateFunc(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal("Add error: ", err)
 	}
-	for repo, _ := range mover.Config.Repository {
+	for repo := range mover.Config.Repository {
 		err = mover.Update(repo)
 		if err != nil {
 			log.Println("Update error: ", err)

@@ -9,19 +9,19 @@ import (
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List all file in repository.",
+	Short: "List all items in a repository.",
 	Run:   listFunc,
 }
 
 var listRepoCmd = &cobra.Command{
 	Use:   "repo",
-	Short: "List all file in all repositories.",
+	Short: "List all items in all repositories.",
 	Run:   listRepository,
 }
 
 var listFileCmd = &cobra.Command{
 	Use:   "file [...repo]",
-	Short: "List all file in a repository.",
+	Short: "List all items in a repository.",
 	Args:  cobra.MinimumNArgs(1),
 	Run:   listFiles,
 }

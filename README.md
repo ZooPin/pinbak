@@ -1,10 +1,11 @@
 # Pinbak 🐧
 
-Pinbak is a small backup manager. It will save and restore file with git with any git repository manager.
+Pinbak is a small backup manager. It will save and restore file or directory with git with and works with any git 
+repository manager.
 
 ## Getting started
 
-
+Default utilisation
 ```
 pinbak init
 pinbak add repository configuration git@github.com:Pinbak/configuration-backup.git
@@ -14,13 +15,17 @@ pinbak add ssh ~/.ssh/id_rsa.pub
 pinbak list
 ```
 
-To restore the file from a fresh install
+To restore the items from a fresh install
 ```
 pinbak init
 pinbak add repository configuration git@github.com:Pinbak/configuration-backup.git
 pinbak restore all
 ```
 
+To update all the backed items
+```
+pinbak update
+```
 
 ## Usage
 
@@ -36,7 +41,9 @@ Available Commands:
   help        Help about any command
   init        Init pinbak.
   list        List all file in repository.
+  remove      Remove a file from the backup.
   restore     Restore all file in repository.
+  update      Update all files in all repositories.
 
 Flags:
   -h, --help   help for pinbak

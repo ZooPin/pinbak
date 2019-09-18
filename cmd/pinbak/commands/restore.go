@@ -10,7 +10,7 @@ import (
 
 var restoreCmd = &cobra.Command{
 	Use:   "restore [repository-name]",
-	Short: "Restore all file in repository.",
+	Short: "Restore all items in repository.",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return errors.New("requires at least one repository")
@@ -56,7 +56,7 @@ func restoreAllFunc(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal("Add error: ", err)
 	}
-	for repo, _ := range mover.Config.Repository {
+	for repo := range mover.Config.Repository {
 		if !mover.Config.CheckRepository(repo) {
 			log.Print("Repository: ", repo, " does not exist.")
 			continue
