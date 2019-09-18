@@ -74,7 +74,10 @@ func (m Mover) Add(path string, repoName string) error {
 	destPath := m.createDestPath(repoName, id)
 	err = m.move(absPath, destPath)
 	if err != nil {
-		index.Remove(id)
+		err = index.Remove(id)
+		if err != nil {
+			return err
+		}
 	}
 	return err
 }
@@ -88,8 +91,7 @@ func (m Mover) Remove(repoName string, id string) error {
 	if !index.CheckFile(id) {
 		return errors.New("File not found.")
 	}
-	path := m.createDestPath(index.Index[id], repoName)
-	err = os.RemoveAll(path)
+	err = m.Git.Remove(repoName, id)
 	if err != nil {
 		return err
 	}

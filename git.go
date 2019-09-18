@@ -86,3 +86,21 @@ func (g GitHelper) Commit(repoName string) error {
 	})
 	return err
 }
+
+func (g GitHelper) Remove(repoName string, path string) error {
+	r, err := git.PlainOpen(g.createPath(repoName))
+	if err != nil {
+		return err
+	}
+
+	w, err := r.Worktree()
+	if err != nil {
+		return err
+	}
+	_, err = w.Remove(path)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
