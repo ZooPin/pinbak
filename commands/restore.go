@@ -3,9 +3,9 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"github.com/ZooPin/pinbak/helper"
 	"github.com/spf13/cobra"
 	"log"
-	"pinbak/cmd/pinbak/helper"
 )
 
 var restoreCmd = &cobra.Command{

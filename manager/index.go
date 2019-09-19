@@ -1,10 +1,10 @@
-package pinbak
+package manager
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/satori/go.uuid"
+	"github.com/rs/xid"
 	"io/ioutil"
 	"os"
 )
@@ -13,12 +13,14 @@ type Index struct {
 	Index    map[string]string `json:"index"`
 	Path     string            `json:"-"`
 	RepoName string            `json:"-"`
+	guid     xid.ID            `json:"-"`
 }
 
 func openIndex(basePath string, repoName string) (Index, error) {
 	var index Index
 	err := index.open(basePath, repoName)
 	index.RepoName = repoName
+	index.guid = xid.New()
 	return index, err
 }
 
@@ -58,8 +60,7 @@ func (I *Index) Add(path string) (string, error) {
 	if I.Index == nil {
 		I.Index = make(map[string]string)
 	}
-
-	id := fmt.Sprintf("%s", uuid.NewV4())
+	id := fmt.Sprintf("%s", I.guid.String())
 	I.Index[id] = path
 
 	err := I.save()
