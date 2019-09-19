@@ -15,7 +15,7 @@ var addCmd = &cobra.Command{
 }
 
 var addRepoCmd = &cobra.Command{
-	Use:   "repository [name] [url]",
+	Use:   "repo [name] [url]",
 	Short: "Add a repository to pinbak.",
 	Args:  cobra.MinimumNArgs(2),
 	Run:   addRepoFunc,

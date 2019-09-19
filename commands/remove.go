@@ -8,9 +8,9 @@ import (
 )
 
 var removeCmd = &cobra.Command{
-	Use:   "remove [repository] [id] [id...]",
-	Short: "Remove an item from the backup.",
-	Args:  cobra.MinimumNArgs(2),
+	Use:   "remove [id] [id...]",
+	Short: "Remove items from the backup.",
+	Args:  cobra.MinimumNArgs(1),
 	Run:   removeFunc,
 }
 
@@ -21,19 +21,24 @@ func init() {
 func removeFunc(cmd *cobra.Command, args []string) {
 	mover, err := helper.GetMover()
 	if err != nil {
-		log.Fatal("Error remove: ", err)
+		log.Fatal("Remove error: ", err)
 	}
 
-	for i := 1; i < len(args); i++ {
-		err = mover.Remove(args[0], args[i])
+	var repos []string
+	for i := 0; i < len(args); i++ {
+		r, err := mover.Remove(args[i])
 		if err != nil {
-			log.Print("Remove error in ", args[0], " file ", args[i], ": ", err)
+			log.Print("Remove error with items: ", args[i], ": ", err)
+			continue
+		}
+		repos = append(repos, r)
+	}
+
+	for _, repo := range repos {
+		err = mover.Git.CommitAndPush(repo)
+		if err != nil {
+			log.Fatalln("Remove error: ", err)
 		}
 	}
-	err = mover.Git.CommitAndPush(args[0])
-	if err != nil {
-		log.Fatalln("Remove error: ", err)
-	}
-
 	fmt.Println("Done.")
 }

@@ -7,24 +7,33 @@ repository manager.
 
 Default utilisation
 ```
-pinbak init
-pinbak add repository configuration git@github.com:Pinbak/configuration-backup.git
-pinbak add repository ssh git@github.com:Pinbak/ssh-backup.git
-pinbak add configuration ~/.bashrc ~/.gitconfig ~/.config/Code/User/settings.json
-pinbak add ssh ~/.ssh/id_rsa.pub
-pinbak list
+$ pinbak init
+$ pinbak add repo configuration git@github.com:Pinbak/configuration-backup.git
+$ pinbak add repo ssh git@github.com:Pinbak/ssh-backup.git
+$ pinbak add configuration ~/.bashrc ~/.gitconfig ~/.config/Code/User/settings.json
+$ pinbak add ssh ~/.ssh/id_rsa.pub
+$ pinbak list
 ```
 
-To restore the items from a fresh install
+To restore all the items from a fresh install
 ```
-pinbak init
-pinbak add repository configuration git@github.com:Pinbak/configuration-backup.git
-pinbak restore all
+$ pinbak init
+$ pinbak add repository configuration git@github.com:Pinbak/configuration-backup.git
+$ pinbak restore all
 ```
 
 To update all the backed items
 ```
-pinbak update
+$ pinbak update
+```
+
+To remove an item
+```
+$ pinbak list
+configuration : git@github.com:Pinbak/configuration.git
+    -  bm1nrku1nn09qvbipro0  :  {HOME}/.gitconfig
+$ pinbak remove bm1nrku1nn09qvbipro0
+Done.
 ```
 
 ## Usage
@@ -51,4 +60,8 @@ Flags:
 Use "pinbak [command] --help" for more information about a command.
 ```
 
+## Disclamer
 
+* Pinbak will write all the directory with the UNIX decimal write `drwxr-xr-x` and file with `-rw-r--r--`.
+* All directories and files will be writed with as the current user.
+* When Pinbak detect an home path it will be restore in the home directory of the current user.

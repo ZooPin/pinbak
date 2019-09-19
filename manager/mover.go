@@ -6,7 +6,6 @@ import (
 	"github.com/otiai10/copy"
 	"io"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strings"
 )
@@ -26,7 +25,7 @@ func CreateMover(config Config, git GitHelper) Mover {
 	}
 }
 
-const moverUser = "{USER}"
+const moverHome = "{HOME}"
 
 func (m *Mover) checkIndex(repoName string) (Index, error) {
 	if m.Index == nil {
@@ -55,14 +54,7 @@ func (m Mover) Add(path string, repoName string) error {
 		return err
 	}
 
-	backupPath := absPath
-	// Handle Home directory
-	// TODO: same for windows & better way to handle this
-	if strings.HasPrefix(absPath, "/home") {
-		t := strings.Split(absPath, "/")
-		t[2] = moverUser
-		backupPath = strings.Join(t, "/")
-	}
+	backupPath := m.checkForHomePath(absPath)
 	id, ok := index.ContainPath(backupPath)
 	if !ok {
 		id, err = index.Add(backupPath)
@@ -82,7 +74,25 @@ func (m Mover) Add(path string, repoName string) error {
 	return err
 }
 
-func (m Mover) Remove(repoName string, id string) error {
+func (m Mover) Remove(id string) (string, error) {
+	for repo := range m.Config.Repository {
+		index, err := m.checkIndex(repo)
+		if err != nil {
+			return "", err
+		}
+		if !index.CheckFile(id) {
+			continue
+		}
+		err = m.RemoveFromRepository(repo, id)
+		if err != nil {
+			return "", err
+		}
+		return repo, nil
+	}
+	return "", errors.New("File not found.")
+}
+
+func (m Mover) RemoveFromRepository(repoName string, id string) error {
 	index, err := m.checkIndex(repoName)
 	if err != nil {
 		return err
@@ -114,7 +124,7 @@ func (m Mover) Update(repoName string) error {
 	}
 
 	for id, path := range index.Index {
-		sourcePath := m.handleHomePath(path)
+		sourcePath := m.retrieveHomePath(path)
 		destPath := m.createDestPath(repoName, id)
 		err := m.Git.Remove(repoName, id)
 		if err != nil {
@@ -145,7 +155,7 @@ func (m Mover) RestoreFile(repoName string, id string) error {
 	if err != nil {
 		return err
 	}
-	restorePath := m.handleHomePath(index.Index[id])
+	restorePath := m.retrieveHomePath(index.Index[id])
 	backupPath := m.createDestPath(repoName, id)
 	err = m.move(backupPath, restorePath)
 	return err
@@ -182,10 +192,26 @@ func (m Mover) move(source string, destination string) error {
 	return nil
 }
 
-func (m Mover) handleHomePath(path string) string {
+func (m Mover) checkForHomePath(path string) string {
 	if strings.HasPrefix(path, "/home") {
-		u, _ := user.Current()
-		path = strings.Replace(path, moverUser, u.Name, -1)
+		t := strings.Split(path, "/")
+		t[2] = moverHome
+		return strings.Join(t[2:], "/")
+	}
+
+	if strings.Contains(path, `\User`) {
+		t := strings.Split(path, `\`)
+		t[2] = moverHome
+		return strings.Join(t[2:], `\`)
+	}
+
+	return path
+}
+
+func (m Mover) retrieveHomePath(path string) string {
+	if strings.HasPrefix(path, "{HOME}") {
+		home, _ := os.UserHomeDir()
+		path = strings.Replace(path, moverHome, home, -1)
 	}
 	return path
 }
