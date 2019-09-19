@@ -14,8 +14,28 @@ var removeCmd = &cobra.Command{
 	Run:   removeFunc,
 }
 
+var removeRepoCmd = &cobra.Command{
+	Use:   "repo [name]",
+	Short: "Remove repository from the backup.",
+	Args:  cobra.MaximumNArgs(1),
+	Run:   removeRepoFunc,
+}
+
 func init() {
+	removeCmd.AddCommand(removeRepoCmd)
 	rootCmd.AddCommand(removeCmd)
+}
+
+func removeRepoFunc(cmd *cobra.Command, args []string) {
+	config, err := helper.GetConfig()
+	if err != nil {
+		log.Fatal("Remove error: ", err)
+	}
+	err = config.RemoveRepository(args[0])
+	if err != nil {
+		log.Println("Remove error: ", err)
+	}
+	fmt.Println("Repository", args[0], "removed.")
 }
 
 func removeFunc(cmd *cobra.Command, args []string) {

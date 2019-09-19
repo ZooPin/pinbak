@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 )
 
 type Config struct {
@@ -16,16 +17,16 @@ type Config struct {
 	configPath string            `json:"-"`
 }
 
-const configName = "config"
+const configName = "config.json"
 
 func LoadConfig(path string) (Config, error) {
 	var config Config
 	return config.Load(path)
 }
 
-func (c *Config) SetPath(path string) {
-	c.path = path
-	c.configPath = fmt.Sprint(path, "/", configName)
+func (c *Config) SetPath(lPath string) {
+	c.path = lPath
+	c.configPath = path.Join(lPath, configName)
 }
 
 func (c Config) Load(path string) (Config, error) {
@@ -45,11 +46,7 @@ func (c Config) Load(path string) (Config, error) {
 	}
 
 	err = json.Unmarshal(data, &conf)
-	if err != nil {
-		return Config{}, err
-	}
-
-	return conf, nil
+	return conf, err
 }
 
 func (c Config) Save() error {
@@ -59,10 +56,7 @@ func (c Config) Save() error {
 	}
 
 	err = ioutil.WriteFile(c.configPath, file, 0644)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (c *Config) AddRepository(name string, url string) error {
@@ -75,11 +69,20 @@ func (c *Config) AddRepository(name string, url string) error {
 	c.Repository[name] = url
 
 	err := c.Save()
+	return err
+}
+
+func (c *Config) RemoveRepository(name string) error {
+	if _, ok := c.Repository[name]; !ok {
+		return errors.New("Repository not found.")
+	}
+	delete(c.Repository, name)
+	err := c.Save()
 	if err != nil {
 		return err
 	}
-
-	return nil
+	err = os.RemoveAll(path.Join(c.path, name))
+	return err
 }
 
 func (c Config) CheckRepository(name string) bool {
