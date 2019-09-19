@@ -3,10 +3,11 @@ package manager
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"github.com/rs/xid"
 	"io/ioutil"
 	"os"
+	"path"
+
+	"github.com/rs/xid"
 )
 
 type Index struct {
@@ -15,6 +16,8 @@ type Index struct {
 	RepoName string            `json:"-"`
 	guid     xid.ID            `json:"-"`
 }
+
+const indexName = "index"
 
 func openIndex(basePath string, repoName string) (Index, error) {
 	var index Index
@@ -33,7 +36,7 @@ func (I Index) checkIndex(basePath string, repoName string) bool {
 }
 
 func (I *Index) open(basePath string, repoName string) error {
-	I.Path = fmt.Sprint(basePath, "/", repoName, "/index")
+	I.Path = path.Join(basePath, repoName, indexName)
 	if !I.checkIndex(basePath, repoName) {
 		I.Index = make(map[string]string)
 		err := I.save()
@@ -50,25 +53,18 @@ func (I *Index) open(basePath string, repoName string) error {
 		return err
 	}
 	err = json.Unmarshal(data, &I)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (I *Index) Add(path string) (string, error) {
 	if I.Index == nil {
 		I.Index = make(map[string]string)
 	}
-	id := fmt.Sprintf("%s", I.guid.String())
+	id := I.guid.String()
 	I.Index[id] = path
 
 	err := I.save()
-	if err != nil {
-		return "", err
-	}
-
-	return id, nil
+	return id, err
 }
 
 func (I Index) CheckFile(id string) bool {
@@ -91,10 +87,7 @@ func (I Index) save() error {
 		return err
 	}
 	err = ioutil.WriteFile(I.Path, file, 0644)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (I *Index) Remove(id string) error {
@@ -104,9 +97,5 @@ func (I *Index) Remove(id string) error {
 	delete(I.Index, id)
 
 	err := I.save()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

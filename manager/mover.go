@@ -2,10 +2,10 @@ package manager
 
 import (
 	"errors"
-	"fmt"
 	"github.com/otiai10/copy"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -217,5 +217,5 @@ func (m Mover) retrieveHomePath(path string) string {
 }
 
 func (m Mover) createDestPath(repoName string, id string) string {
-	return fmt.Sprint(m.Path, "/", repoName, "/", id)
+	return path.Join(m.Path, repoName, id)
 }

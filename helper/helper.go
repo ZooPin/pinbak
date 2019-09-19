@@ -1,9 +1,10 @@
 package helper
 
 import (
-	"fmt"
-	"github.com/ZooPin/pinbak/manager"
 	"os"
+	"path"
+
+	"github.com/ZooPin/pinbak/manager"
 )
 
 func GetConfig() (manager.Config, error) {
@@ -32,5 +33,5 @@ func homeDir() string {
 }
 
 func PinbakPath() string {
-	return fmt.Sprint(homeDir(), "/.pinbak")
+	return path.Join(homeDir(), ".pinbak")
 }

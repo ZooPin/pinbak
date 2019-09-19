@@ -49,10 +49,10 @@ Available Commands:
   add         Add a file to backup.
   help        Help about any command
   init        Init pinbak.
-  list        List all file in repository.
-  remove      Remove a file from the backup.
-  restore     Restore all file in repository.
-  update      Update all files in all repositories.
+  list        List all items in a repository.
+  remove      Remove items or repository from the backup.
+  restore     Restore all items in repository.
+  update      Update all items in all repositories.
 
 Flags:
   -h, --help   help for pinbak
