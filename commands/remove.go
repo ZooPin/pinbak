@@ -9,7 +9,7 @@ import (
 
 var removeCmd = &cobra.Command{
 	Use:   "remove [id] [id...]",
-	Short: "Remove items from the backup.",
+	Short: "Remove items or repository from the backup.",
 	Args:  cobra.MinimumNArgs(1),
 	Run:   removeFunc,
 }
