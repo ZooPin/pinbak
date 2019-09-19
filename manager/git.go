@@ -1,9 +1,9 @@
 package manager
 
 import (
-	"fmt"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"path"
 	"time"
 )
 
@@ -20,7 +20,7 @@ func CreateGit(config Config) GitHelper {
 }
 
 func (g GitHelper) Clone(name string, url string) error {
-	homePath := fmt.Sprint(g.Path, "/", name)
+	homePath := path.Join(g.Path, name)
 	_, err := git.PlainClone(homePath, false, &git.CloneOptions{
 		URL:               url,
 		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
@@ -35,7 +35,7 @@ func (g GitHelper) Clone(name string, url string) error {
 }
 
 func (g GitHelper) createPath(repoName string) string {
-	return fmt.Sprint(g.Path, "/", repoName)
+	return path.Join(g.Path, repoName)
 }
 
 func (g GitHelper) CommitAndPush(repoName string) error {
@@ -55,11 +55,7 @@ func (g GitHelper) Push(repoName string) error {
 	}
 
 	err = r.Push(&git.PushOptions{})
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (g GitHelper) Commit(repoName string) error {
@@ -98,9 +94,5 @@ func (g GitHelper) Remove(repoName string, path string) error {
 		return err
 	}
 	_, err = w.Remove(path)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

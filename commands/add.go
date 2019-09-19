@@ -53,7 +53,7 @@ func addRepoFunc(cmd *cobra.Command, args []string) {
 	}
 	err = git.Clone(args[0], args[1])
 	if err != nil {
-		log.Fatal("Add repo  error:", err)
+		log.Fatal("Add repo error:", err)
 	}
 	fmt.Println("Repository", args[0], "added.")
 }
