@@ -1,4 +1,4 @@
-package pinbak
+package manager
 
 import (
 	"errors"
@@ -134,7 +134,7 @@ func (m Mover) Restore(repoName string) error {
 		return err
 	}
 
-	for id, _ := range index.Index {
+	for id := range index.Index {
 		err = m.RestoreFile(repoName, id)
 	}
 	return err

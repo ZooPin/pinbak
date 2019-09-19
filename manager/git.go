@@ -1,4 +1,4 @@
-package pinbak
+package manager
 
 import (
 	"fmt"

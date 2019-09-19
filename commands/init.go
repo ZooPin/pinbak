@@ -1,11 +1,11 @@
 package commands
 
 import (
+	"github.com/ZooPin/pinbak/helper"
+	"github.com/ZooPin/pinbak/manager"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
-	"pinbak"
-	"pinbak/cmd/pinbak/helper"
 )
 
 var initCmd = &cobra.Command{
@@ -29,7 +29,7 @@ func initFunc(cmd *cobra.Command, args []string) {
 		log.Fatal("Init error: ", err)
 	}
 
-	var config pinbak.Config
+	var config manager.Config
 	config.Name = "Pinbak"
 	config.Email = "no-email@pinbak"
 	config.SetPath(helper.PinbakPath())
