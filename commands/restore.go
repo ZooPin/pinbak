@@ -42,9 +42,11 @@ func restoreFunc(cmd *cobra.Command, args []string) {
 			log.Print("Repository: ", repo, " does not exist.")
 			continue
 		}
-		err = mover.Restore(repo)
-		if err != nil {
-			log.Print("Error restore ", repo, ": ", err)
+		errs := mover.Restore(repo)
+		if len(errs) > 0 {
+			for _, err := range errs {
+				log.Print("Error restore ", repo, ": ", err)
+			}
 			continue
 		}
 		fmt.Println("Repository ", repo, " restored.")
@@ -61,9 +63,11 @@ func restoreAllFunc(cmd *cobra.Command, args []string) {
 			log.Print("Repository: ", repo, " does not exist.")
 			continue
 		}
-		err = mover.Restore(repo)
-		if err != nil {
-			log.Print("Error restore ", repo, ": ", err)
+		errs := mover.Restore(repo)
+		if len(errs) > 0 {
+			for _, err := range errs {
+				log.Print("Error restore ", repo, ": ", err)
+			}
 			continue
 		}
 		fmt.Println("Repository ", repo, " restored.")

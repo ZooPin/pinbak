@@ -48,6 +48,26 @@ func (g GitHelper) CommitAndPush(repoName string) error {
 	return err
 }
 
+func (g GitHelper) Pull(repoName string) error {
+	r, err := git.PlainOpen(g.createPath(repoName))
+	if err != nil {
+		return err
+	}
+	w, err := r.Worktree()
+	if err != nil {
+		return err
+	}
+
+	err = w.Pull(&git.PullOptions{
+		RemoteName: "origin",
+	})
+
+	if err == git.NoErrAlreadyUpToDate {
+		err = nil
+	}
+	return err
+}
+
 func (g GitHelper) Push(repoName string) error {
 	r, err := git.PlainOpen(g.createPath(repoName))
 	if err != nil {
@@ -68,6 +88,14 @@ func (g GitHelper) Commit(repoName string) error {
 	if err != nil {
 		return err
 	}
+
+	err = w.Pull(&git.PullOptions{
+		RemoteName: "origin",
+	})
+	if err != nil && err != git.NoErrAlreadyUpToDate {
+		return err
+	}
+
 	_, err = w.Add(".")
 	if err != nil {
 		return err
