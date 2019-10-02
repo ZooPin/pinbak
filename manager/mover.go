@@ -44,6 +44,11 @@ func (m *Mover) checkIndex(repoName string) (Index, error) {
 }
 
 func (m Mover) Add(path string, repoName string) error {
+	err := m.Git.Pull(repoName)
+	if err != nil {
+		return err
+	}
+
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return err
@@ -97,6 +102,10 @@ func (m Mover) RemoveFromRepository(repoName string, id string) error {
 	if err != nil {
 		return err
 	}
+	err = m.Git.Pull(repoName)
+	if err != nil {
+		return err
+	}
 
 	if !index.CheckFile(id) {
 		return errors.New("File not found.")
@@ -123,6 +132,11 @@ func (m Mover) Update(repoName string) error {
 		return err
 	}
 
+	err = m.Git.Pull(repoName)
+	if err != nil {
+		return err
+	}
+
 	for id, path := range index.Index {
 		sourcePath := m.retrieveHomePath(path)
 		destPath := m.createDestPath(repoName, id)
@@ -138,16 +152,26 @@ func (m Mover) Update(repoName string) error {
 	return nil
 }
 
-func (m Mover) Restore(repoName string) error {
+func (m Mover) Restore(repoName string) []error {
 	index, err := m.checkIndex(repoName)
+	var errs []error
 	if err != nil {
-		return err
+		errs = append(errs, err)
+		return errs
+	}
+	err = m.Git.Pull(repoName)
+	if err != nil {
+		errs = append(errs, err)
+		return errs
 	}
 
 	for id := range index.Index {
 		err = m.RestoreFile(repoName, id)
+		if err != nil {
+			errs = append(errs, err)
+		}
 	}
-	return err
+	return errs
 }
 
 func (m Mover) RestoreFile(repoName string, id string) error {
