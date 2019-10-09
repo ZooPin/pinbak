@@ -49,7 +49,7 @@ func (m Mover) Add(path string, repoName string) error {
 		return err
 	}
 
-	absPath, err := filepath.Abs(path)
+	absPath, err := m.absolutePath(path)
 	if err != nil {
 		return err
 	}
@@ -214,6 +214,17 @@ func (m Mover) move(source string, destination string) error {
 	}
 
 	return nil
+}
+
+func (m Mover) absolutePath(path string) (string, error) {
+	if path[0] == '~' {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		return filepath.Join(home, path[1:]), nil
+	}
+	return filepath.Abs(path)
 }
 
 func (m Mover) checkForHomePath(path string) string {
