@@ -126,30 +126,34 @@ func (m Mover) List(repoName string) (map[string]string, error) {
 	return index.Index, nil
 }
 
-func (m Mover) Update(repoName string) error {
+func (m Mover) Update(repoName string) []error {
+	var errs []error
 	index, err := m.checkIndex(repoName)
 	if err != nil {
-		return err
+		errs = append(errs, err)
+		return errs
 	}
 
 	err = m.Git.Pull(repoName)
 	if err != nil {
-		return err
+		errs = append(errs, err)
+		return errs
 	}
 
-	for id, path := range index.Index {
-		sourcePath := m.retrieveHomePath(path)
+	for id, p := range index.Index {
+		sourcePath := m.retrieveHomePath(p)
 		destPath := m.createDestPath(repoName, id)
 		err := m.Git.Remove(repoName, id)
 		if err != nil {
-			return err
+			errs = append(errs, err)
+			continue
 		}
 		err = m.move(sourcePath, destPath)
 		if err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
-	return nil
+	return errs
 }
 
 func (m Mover) Restore(repoName string) []error {
