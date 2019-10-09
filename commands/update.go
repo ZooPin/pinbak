@@ -23,9 +23,11 @@ func updateFunc(cmd *cobra.Command, args []string) {
 		log.Fatal("Add error: ", err)
 	}
 	for repo := range mover.Config.Repository {
-		err = mover.Update(repo)
-		if err != nil {
-			log.Println("Update error with repo ", repo, ":", err)
+		errs := mover.Update(repo)
+		if len(errs) > 0 {
+			for _, err := range errs {
+				log.Println("Update error with repo ", repo, ":", err)
+			}
 		}
 		err = mover.Git.CommitAndPush(repo)
 		if err != nil {
