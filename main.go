@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ZooPin/pinbak/commands"
+	"github.com/pngouin/pinbak/commands"
 )
 
 func main() {

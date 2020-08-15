@@ -1,8 +1,8 @@
 package commands
 
 import (
-	"github.com/ZooPin/pinbak/helper"
-	"github.com/ZooPin/pinbak/manager"
+	"github.com/pngouin/pinbak/helper"
+	"github.com/pngouin/pinbak/manager"
 	"github.com/spf13/cobra"
 	"log"
 	"os"

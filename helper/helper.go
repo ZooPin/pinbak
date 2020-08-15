@@ -4,7 +4,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/ZooPin/pinbak/manager"
+	"github.com/pngouin/pinbak/manager"
 )
 
 func GetConfig() (manager.Config, error) {
